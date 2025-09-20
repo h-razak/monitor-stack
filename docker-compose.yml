@@ -1,0 +1,169 @@
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+services:
+  # Prometheus - Main metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-200h}'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+
+  # Grafana - Visualization and alerting dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=${GRAFANA_PLUGINS:-grafana-piechart-panel,grafana-worldmap-panel,grafana-clock-panel}
+      # Enable Grafana's native alerting (GUI-based, no external AlertManager)
+      - GF_ALERTING_ENABLED=${GRAFANA_ALERTING_ENABLED:-true}
+      - GF_ALERTING_EXECUTE_ALERTS=${GRAFANA_ALERTING_ENABLED:-true}
+      - GF_UNIFIED_ALERTING_ENABLED=${GRAFANA_UNIFIED_ALERTING:-true}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      # Dashboards imported via GUI for flexibility
+    networks:
+      - monitoring
+
+
+  # Node Exporter - System metrics for monitoring host
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring
+
+  # cAdvisor - Container metrics (automatic Docker monitoring)
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    ports:
+      - "${CADVISOR_PORT:-8080}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    privileged: true
+    networks:
+      - monitoring
+
+  # Blackbox Exporter - Network connectivity monitoring
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "${BLACKBOX_EXPORTER_PORT:-9115}:9115"
+    volumes:
+      - ./config/blackbox:/etc/blackbox_exporter
+    networks:
+      - monitoring
+
+  # SNMP Exporter - Network device monitoring (FortiGate)
+  snmp-exporter:
+    image: prom/snmp-exporter:latest
+    container_name: snmp-exporter
+    restart: unless-stopped
+    ports:
+      - "${SNMP_EXPORTER_PORT:-9116}:9116"
+    volumes:
+      - ./config/snmp:/etc/snmp_exporter
+    networks:
+      - monitoring
+
+  # Proxmox VE API Exporter - Automatic VM/LXC discovery
+  # Configure API user via Proxmox GUI: Datacenter > Permissions > Users
+  pve-exporter:
+    image: prompve/prometheus-pve-exporter:latest
+    container_name: pve-exporter
+    restart: unless-stopped
+    ports:
+      - "${PVE_EXPORTER_PORT:-9221}:9221"
+    environment:
+      - PVE_USER=${PVE_API_USER:-monitoring@pve}
+      - PVE_PASSWORD=${PVE_API_PASSWORD:-monitoring123}
+      - PVE_VERIFY_SSL=${PVE_VERIFY_SSL:-false}
+      - PVE_NODES=${PROXMOX_NODE_1:-10.20.10.11},${PROXMOX_NODE_2:-10.20.10.12},${PROXMOX_NODE_3:-10.20.10.13},${PROXMOX_NODE_4:-10.20.10.14},${PROXMOX_NODE_5:-10.20.10.15},${PROXMOX_NODE_6:-10.20.10.16}
+    networks:
+      - monitoring
+
+  # Loki - Log aggregation (internal communication with Promtail)
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./config/loki:/etc/loki
+    networks:
+      - monitoring
+
+  # Promtail - Log collection agent (communicates with Loki internally)
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./config/promtail:/etc/promtail
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring
+
+  # Uptime Kuma - Additional uptime monitoring with web UI
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "${UPTIME_KUMA_PORT:-3001}:3001"
+    volumes:
+      - ./data/uptime-kuma:/app/data
+    networks:
+      - monitoring

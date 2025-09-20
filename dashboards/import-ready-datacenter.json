@@ -1,0 +1,97 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Datacenter Overview - Import Ready",
+    "tags": ["datacenter", "proxmox", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Server Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"proxmox-nodes\"}",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "UP", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "CPU Usage %",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\",job=\"proxmox-nodes\"}[5m])) * 100)",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage %", 
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "(1 - (node_memory_MemAvailable_bytes{job=\"proxmox-nodes\"} / node_memory_MemTotal_bytes{job=\"proxmox-nodes\"})) * 100",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Network Connectivity",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "probe_success{job=\"network-ping-check\"}",
+            "legendFormat": "{{instance}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "FAIL", "color": "red"}}, "type": "value"},
+              {"options": {"1": {"text": "OK", "color": "green"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "30s",
+    "schemaVersion": 30,
+    "version": 1,
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource", 
+          "query": "prometheus",
+          "hide": 2
+        }
+      ]
+    }
+  },
+  "overwrite": false,
+  "inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "type": "datasource",
+      "pluginId": "prometheus", 
+      "value": "prometheus-uid"
+    }
+  ]
+}

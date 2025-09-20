@@ -1,0 +1,113 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# No AlertManager needed - Grafana handles all alerting through its built-in alerting system
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Monitoring stack services
+  - job_name: 'monitoring-stack'
+    static_configs:
+      - targets:
+        - 'node-exporter:9100'
+        - 'cadvisor:8080'
+        - 'grafana:3000'
+        labels:
+          environment: 'monitoring'
+
+  # DATACENTER SERVERS - Your actual Proxmox cluster
+  
+  # Note: Proxmox host metrics available via PVE API exporter
+  # VM/LXC metrics automatically discovered via API
+
+  # Proxmox VE API Exporter - Automatic VM/LXC discovery
+  - job_name: 'proxmox-ve-api'
+    static_configs:
+      - targets: ['pve-exporter:9221']
+    scrape_interval: 60s
+    metrics_path: /pve
+    params:
+      module: [default]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'pve-exporter:9221'
+
+  # Future Performance Servers - VM Network (10.0.2.x) - uncomment when ready
+  # - job_name: 'performance-servers'
+  #   static_configs:
+  #     - targets:
+  #       - '10.0.2.10:9100'  # perf-server-1
+  #       - '10.0.2.11:9100'  # perf-server-2
+  #       labels:
+  #         network: 'vm-network'
+  #         server_type: 'performance'
+
+  # Future Storage Servers - Storage Network (10.0.3.x) - uncomment when ready
+  # - job_name: 'storage-servers'
+  #   static_configs:
+  #     - targets:
+  #       - '10.0.3.20:9100'  # storage-server-1
+  #       - '10.0.3.21:9100'  # storage-server-2
+  #       labels:
+  #         network: 'storage'
+  #         server_type: 'storage'
+
+  # Network Infrastructure Monitoring
+  - job_name: 'network-ping-check'
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    static_configs:
+      - targets:
+        # Management Network
+        - '10.20.10.1'    # FortiNet firewall
+        - '10.20.10.11'   # Proxmox nodes
+        - '10.20.10.12'
+        - '10.20.10.13'
+        - '10.20.10.14'
+        - '10.20.10.15'
+        - '10.20.10.16'
+        # External connectivity test
+        - '8.8.8.8'
+        labels:
+          check_type: 'ping'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Web Service Monitoring - Proxmox and FortiNet interfaces
+  - job_name: 'web-services'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://10.20.10.11:8006   # Proxmox web UI
+        - http://10.20.10.12:8006   # Proxmox web UI
+        - http://10.20.10.13:8006   # Proxmox web UI
+        - http://10.20.10.14:8006   # Proxmox web UI
+        - http://10.20.10.15:8006   # Proxmox web UI
+        - http://10.20.10.16:8006   # Proxmox web UI
+        - https://10.20.10.1        # FortiNet web UI
+        labels:
+          check_type: 'http'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

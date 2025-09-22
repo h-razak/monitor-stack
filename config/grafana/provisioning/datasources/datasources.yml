@@ -15,14 +15,4 @@ datasources:
       httpMethod: "POST"
     version: 1
 
-  # Loki - Log aggregation data source  
-  - name: Loki
-    type: loki
-    access: proxy
-    url: http://loki:3100
-    editable: true
-    uid: loki-uid
-    jsonData:
-      maxLines: 1000
-      timeout: "60s"
-    version: 1
+  # Only Prometheus - focused on metrics monitoring

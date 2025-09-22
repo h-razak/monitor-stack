@@ -1,0 +1,7 @@
+apiVersion: 1
+
+providers:
+  # Dashboards imported via GUI for flexibility and customization
+  # Use import-ready-datacenter.json from dashboards/ directory
+  # Import via Grafana web interface: + (Plus) → Import
+  []

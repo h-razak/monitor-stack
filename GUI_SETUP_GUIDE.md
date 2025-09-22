@@ -15,9 +15,8 @@ This setup maximizes GUI-based configuration while keeping efficient internal Do
 - **Dashboard Customization**: All visual changes via web interface
 
 ### ⚙️ Config Files (Internal Efficiency)
-- **Service Communication**: Prometheus ↔ Grafana ↔ Loki (Docker networking)
+- **Service Communication**: Prometheus ↔ Grafana (Docker networking)
 - **Metric Collection**: Internal scrape configurations
-- **Log Parsing**: Promtail log processing rules
 - **Network Probes**: Blackbox exporter modules
 
 ---
@@ -91,25 +90,21 @@ docker-compose up -d
 ```
 monitoring/
 ├── .env                          # 🔧 YOUR SETTINGS (edit this)
-├── docker-compose.yml            # 🐳 Service definitions
+├── docker-compose.yml            # 🐳 5 essential services
 ├── 
-├── config/                       # ⚙️ Internal service configs
+├── config/                       # ⚙️ Auto-configured services
 │   ├── prometheus/               # Metrics collection rules
 │   ├── grafana/provisioning/     # Auto data source setup
 │   ├── blackbox/                 # Network monitoring
-│   ├── loki/                     # Log aggregation
-│   └── promtail/                 # Log collection
+│   └── snmp/                     # FortiGate monitoring
 │
 ├── dashboards/                   # 📊 GUI import files
 │   └── import-ready-*.json       # Import via Grafana GUI
 │
-├── guides/                       # 📖 Step-by-step instructions
-│   ├── PROXMOX_API_SETUP.md      # GUI API user creation
-│   ├── GRAFANA_DASHBOARD_GUIDE.md # Dashboard import & customization
-│   └── ALERTING_SETUP.md         # GUI alert configuration
-│
-└── scripts/                      # 🔧 Optional automation
-    └── install-node-exporter.sh  # For Proxmox host monitoring
+└── guides/                       # 📖 Step-by-step instructions
+    ├── PROXMOX_API_SETUP.md      # GUI API user creation
+    ├── GRAFANA_ALERTING_GUIDE.md # GUI alert configuration
+    └── API_MONITORING_GUIDE.md   # API monitoring benefits
 ```
 
 ---
@@ -179,13 +174,11 @@ After starting with `docker-compose up -d`:
 ### Immediate (After Step 3):
 - ✅ Grafana accessible at port 3000
 - ✅ Prometheus showing targets at port 9090
-- ✅ Container metrics visible (cAdvisor)
 - ✅ Network connectivity tests working
 
 ### After GUI Setup:
 - ✅ All Proxmox VMs/LXCs visible in dashboards
 - ✅ Custom alert rules triggering correctly
 - ✅ Dashboard panels showing live data
-- ✅ Log aggregation working in Grafana
 
 **Most configuration happens through friendly web interfaces - not config file editing!** 🎯

@@ -10,13 +10,11 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # Monitoring stack services
+  # Monitoring stack services (minimal - no self-monitoring)
   - job_name: 'monitoring-stack'
     static_configs:
       - targets:
-        - 'node-exporter:9100'
-        - 'cadvisor:8080'
-        - 'grafana:3000'
+        - 'grafana:3000'       # Just Grafana health check
         labels:
           environment: 'monitoring'
 

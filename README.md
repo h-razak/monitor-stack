@@ -1,4 +1,8 @@
-# 🏢## 🚀 Quick Deployment (3 Steps)
+# 🏢 Datacenter Monitoring Stack
+
+**Complete Docker-based monitoring solution for Proxmox clusters with GUI-first configuration**
+
+## 🚀 Quick Deployment (4 Steps)
 
 ### Step 1: Copy to Your Monitoring Server
 ```bash
@@ -34,27 +38,7 @@ docker-compose up -d
 # Prometheus: http://10.20.10.34:9090
 ```
 
-**Result**: Complete datacenter monitoring with automatic VM/LXC discovery! 🎉oring Stack
-
-**Complete Docker-based monitoring solution for Proxmox clusters with GUI-first configuration**
-
-## 🎯 Quick Start (3 Steps)
-
-### 1. Configure Your Environment
-```bash
-# Edit .env file with your network details
-nano .env
-```
-
-### 2. Create Proxmox API User  
-**See**: `PROXMOX_API_SETUP.md` for GUI-based setup
-
-### 3. Deploy
-```bash
-docker-compose up -d
-```
-
-**Result**: Full monitoring dashboard at `http://your-server:3000` (admin/admin123)
+**Result**: Complete datacenter monitoring with automatic VM/LXC discovery! 🎉
 
 ---
 
@@ -85,11 +69,15 @@ docker-compose up -d
 ```
 monitoring/
 ├── .env                    # 🔧 YOUR SETTINGS (only file you edit)
-├── docker-compose.yml      # 🐳 Service orchestration
-├── config/                 # ⚙️ Internal service configs
-├── dashboards/             # 📊 Import-ready Grafana dashboards
+├── docker-compose.yml      # 🐳 5 essential services
+├── config/                 # ⚙️ Auto-configured services  
+│   ├── prometheus/         # Metrics collection
+│   ├── grafana/           # Dashboard provisioning
+│   ├── blackbox/          # Network monitoring
+│   └── snmp/              # FortiGate monitoring
+├── dashboards/             # 📊 Import-ready dashboards
 ├── test/                   # ✅ Validation scripts
-└── *.md                    # 📖 Complete setup guides
+└── *.md                    # 📖 Setup guides
 ```
 
 ## 🌐 Access Points
@@ -98,13 +86,13 @@ monitoring/
 |---------|-----|---------|
 | **Grafana** | `http://your-server:3000` | Main monitoring dashboard |
 | **Prometheus** | `http://your-server:9090` | Metrics browser |
-| **Uptime Kuma** | `http://your-server:3001` | Uptime monitoring |
 
 ## 📖 Documentation
 
-- **`GUI_SETUP_GUIDE.md`** - Complete walkthrough for GUI-based setup
+- **`GUI_SETUP_GUIDE.md`** - Complete GUI-based setup walkthrough
 - **`PROXMOX_API_SETUP.md`** - Step-by-step API user creation  
 - **`GRAFANA_ALERTING_GUIDE.md`** - Visual alert configuration
+- **`API_MONITORING_GUIDE.md`** - Why API-based monitoring is better
 - **`VALIDATION_COMPLETE.md`** - Deployment readiness confirmation
 
 ## 🔧 Customization

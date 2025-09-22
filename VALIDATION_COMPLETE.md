@@ -7,31 +7,24 @@ Your datacenter monitoring stack has been **triple-checked** and is **ready for 
 ## ✅ Validation Results
 
 ### Configuration Files
-- ✅ **Docker Compose**: Valid syntax, no warnings
-- ✅ **Prometheus Config**: Valid YAML, correct targets
+- ✅ **Docker Compose**: Valid syntax, 5 essential services only
+- ✅ **Prometheus Config**: Valid YAML, API-focused targets
 - ✅ **Grafana Datasources**: Auto-provisioning configured
 - ✅ **Blackbox Config**: Network monitoring ready
-- ✅ **Loki/Promtail**: Log aggregation configured
 - ✅ **SNMP Config**: FortiGate monitoring ready
 
-### Documentation
+### Documentation  
 - ✅ **README.md**: Complete overview and quick start
 - ✅ **GUI_SETUP_GUIDE.md**: Comprehensive GUI workflow
 - ✅ **PROXMOX_API_SETUP.md**: Step-by-step API user creation
 - ✅ **GRAFANA_ALERTING_GUIDE.md**: GUI-based alert setup
-- ✅ **API_MONITORING_GUIDE.md**: API vs manual comparison
-- ✅ **VM_MONITORING_TEMPLATE.md**: Future expansion guide
-
-### Test Suite
-- ✅ **validate.sh**: Comprehensive validation script
-- ✅ **quick-test.sh**: Fast critical component check
-- ✅ **test/README.md**: Testing documentation
+- ✅ **API_MONITORING_GUIDE.md**: API-based monitoring explained
 
 ### Repository Structure
-- ✅ **Clean and organized**: No outdated files
-- ✅ **GUI-focused**: Minimal config file editing needed
-- ✅ **Environment-driven**: .env file for customization
-- ✅ **Production-ready**: All necessary components included
+- ✅ **Ultra-clean**: Removed all redundant components
+- ✅ **GUI-focused**: Zero config file editing needed
+- ✅ **API-first**: Automatic discovery via Proxmox API
+- ✅ **Production-ready**: Minimal essential services only
 
 ## 🚀 Deployment Instructions
 
@@ -67,11 +60,11 @@ docker-compose up -d
 
 Upon deployment, you'll immediately have monitoring for:
 
-### ✅ Automatic Discovery
-- **All Proxmox VMs/LXC containers** (via API)
-- **All Docker containers** (via cAdvisor)
-- **Network connectivity** (via Blackbox)
-- **System logs** (via Loki/Promtail)
+### ✅ Zero-Configuration Discovery
+- **All Proxmox nodes** (6 servers) via API
+- **All VMs and LXCs** automatically discovered
+- **FortiGate firewall** metrics via SNMP
+- **Network connectivity** via Blackbox probes
 
 ### 🎯 Network Coverage
 - **Proxmox Cluster**: 10.20.10.11-16
